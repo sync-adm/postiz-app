@@ -1,0 +1,8 @@
+{
+    "i18n-ally.localesPaths": [
+        "apps/extension/src/locales",
+        "apps/frontend/src/components/messages",
+        "libraries/nestjs-libraries/src/dtos/messages",
+        "libraries/react-shared-libraries/src/translation/locales"
+    ]
+}

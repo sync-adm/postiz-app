@@ -1,0 +1,96 @@
+services:
+  postiz:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: postiz
+    restart: always
+    environment:
+      MAIN_URL: ${MAIN_URL:-https://postiz-marketing.sync.dev.br}
+      FRONTEND_URL: ${FRONTEND_URL:-https://postiz-marketing.sync.dev.br}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://postiz-marketing.sync.dev.br/api}
+      JWT_SECRET: ${JWT_SECRET:-$SERVICE_PASSWORD_64_BASE64}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postiz-postgres:5432/$SERVICE_DATABASE_POSTGRES}
+      REDIS_URL: ${REDIS_URL:-redis://postiz-redis:6379}
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://localhost:3000}
+      IS_GENERAL: ${IS_GENERAL:-true}
+      DISABLE_REGISTRATION: ${DISABLE_REGISTRATION:-true}
+      CLOUDFLARE_ACCESS_KEY: ${CLOUDFLARE_ACCESS_KEY}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID}
+      CLOUDFLARE_BUCKETNAME: ${CLOUDFLARE_BUCKETNAME}
+      CLOUDFLARE_BUCKET_URL: ${CLOUDFLARE_BUCKET_URL}
+      CLOUDFLARE_REGION: ${CLOUDFLARE_REGION}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER}
+      INSTAGRAM_APP_ID: ${INSTAGRAM_APP_ID}
+      INSTAGRAM_APP_SECRET: ${INSTAGRAM_APP_SECRET}
+      FACEBOOK_ID: ${FACEBOOK_APP_ID}
+      FACEBOOK_SECRET: ${FACEBOOK_APP_SECRET}
+      UPLOAD_DIRECTORY: ${UPLOAD_DIRECTORY:-/uploads}
+      NEXT_PUBLIC_UPLOAD_DIRECTORY: ${NEXT_PUBLIC_UPLOAD_DIRECTORY:-/uploads}
+    volumes:
+      - 'postiz-config:/config/'
+      - 'postiz-uploads:/uploads/'
+    ports:
+      - '${POSTIZ_PORT:-5000}:5000'
+    networks:
+      - postiz-network
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+      postiz-redis:
+        condition: service_healthy
+    labels:
+      - traefik.enable=true
+      - 'traefik.http.routers.postiz-https.rule=Host(`${POSTIZ_DOMAIN:-postiz.example.com}`) && PathPrefix(`/`)'
+      - traefik.http.routers.postiz-https.entryPoints=https
+      - traefik.http.routers.postiz-https.middlewares=gzip
+      - traefik.http.routers.postiz-https.service=postiz-service
+      - traefik.http.routers.postiz-https.tls=true
+      - traefik.http.services.postiz-service.loadbalancer.server.port=5000
+      - traefik.http.routers.postiz-https.tls.certresolver=letsencrypt
+      - 'traefik.http.routers.postiz-http.rule=Host(`${POSTIZ_DOMAIN:-postiz.example.com}`) && PathPrefix(`/`)'
+      - traefik.http.routers.postiz-http.entryPoints=http
+      - traefik.http.routers.postiz-http.middlewares=redirect-to-https
+  postiz-postgres:
+    image: 'postgres:17-alpine'
+    container_name: postiz-postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-$SERVICE_PASSWORD_POSTGRES}
+      POSTGRES_USER: ${POSTGRES_USER:-$SERVICE_USER_POSTGRES}
+      POSTGRES_DB: ${POSTGRES_DB:-$SERVICE_DATABASE_POSTGRES}
+    volumes:
+      - 'postgres-volume:/var/lib/postgresql/data'
+    networks:
+      - postiz-network
+    healthcheck:
+      test: 'pg_isready -U ${POSTGRES_USER:-$SERVICE_USER_POSTGRES} -d ${POSTGRES_DB:-$SERVICE_DATABASE_POSTGRES}'
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  postiz-redis:
+    image: 'redis:7.2'
+    container_name: postiz-redis
+    restart: always
+    healthcheck:
+      test: 'redis-cli ping'
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - 'postiz-redis-data:/data'
+    networks:
+      - postiz-network
+volumes:
+  postgres-volume:
+    external: false
+  postiz-redis-data:
+    external: false
+  postiz-config:
+    external: false
+  postiz-uploads:
+    external: false
+networks:
+  postiz-network:
+    external: false

@@ -3,6 +3,6 @@ import { Controller, Get } from '@nestjs/common';
 export class RootController {
   @Get('/')
   getRoot(): string {
-    return 'App is running!';
+    return 'App is running!!';
   }
 }

@@ -28,6 +28,35 @@ export class XProvider extends SocialAbstract implements SocialProvider {
 
   editor = 'normal' as const;
 
+  override handleErrors(body: string):
+    | {
+        type: 'refresh-token' | 'bad-body';
+        value: string;
+      }
+    | undefined {
+    if (body.includes('usage-capped')) {
+      return {
+        type: 'refresh-token',
+        value:
+          'Posting failed - capped reached. Please try again later',
+      };
+    }
+    if (body.includes('duplicate-rules')) {
+      return {
+        type: 'refresh-token',
+        value:
+          'You have already posted this post, please wait before posting again',
+      };
+    }
+    if (body.includes('The Tweet contains an invalid URL.')) {
+      return {
+        type: 'bad-body',
+        value: 'The Tweet contains a URL that is not allowed on X',
+      };
+    }
+    return undefined;
+  }
+
   @Plug({
     identifier: 'x-autoRepostPost',
     title: 'Auto Repost Posts',

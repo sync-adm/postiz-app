@@ -295,7 +295,7 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
     };
 
     const { access_token, refresh_token, scope } = await (
-      await this.fetch('https://open.tiktokapis.com/v2/oauth/token/', {
+      await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -338,7 +338,7 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
     const {
       data: { max_video_post_duration_sec },
     } = await (
-      await this.fetch(
+      await fetch(
         'https://open.tiktokapis.com/v2/post/publish/creator_info/query/',
         {
           method: 'POST',
@@ -461,6 +461,7 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
                     disable_duet: !firstPost.settings.duet || false,
                     disable_comment: !firstPost.settings.comment || false,
                     disable_stitch: !firstPost.settings.stitch || false,
+                    is_aigc: firstPost.settings.video_made_with_ai || false,
                     brand_content_toggle:
                       firstPost.settings.brand_content_toggle || false,
                     brand_organic_toggle:

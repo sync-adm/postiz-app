@@ -127,10 +127,79 @@ export class PublicIntegrationsController {
     return this._mediaService.generateVideo(org, body);
   }
 
-  @Post('/video/function')
-  videoFunction(
-    @Body() body: VideoFunctionDto
+  @Get('/integration')
+  async getIntegrationById(
+    @GetOrgFromRequest() org: Organization,
+    @Query('integrationId') integrationId: string,
+    @Query('limit') limit?: string,
+    @Query('before') before?: string,
+    @Query('after') after?: string
   ) {
-    return this._mediaService.videoFunction(body.identifier, body.functionName, body.params);
+    if (!integrationId) {
+      throw new HttpException({ msg: 'Integration ID is required' }, 400);
+    }
+
+    const integration = await this._integrationService.getIntegrationById(
+      org.id,
+      integrationId
+    );
+
+    if (!integration) {
+      throw new HttpException({ msg: 'Integration not found' }, 404);
+    }
+
+    try {
+      const baseUrl = 'https://graph.instagram.com/me/media';
+      const params = new URLSearchParams({
+        fields: 'id,caption,media_type,media_url,thumbnail_url,timestamp',
+        access_token: integration.token,
+      });
+
+      if (limit) {
+        params.append('limit', limit);
+      }
+
+      if (before) {
+        params.append('before', before);
+      }
+
+      if (after) {
+        params.append('after', after);
+      }
+
+      const response = await fetch(`${baseUrl}?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new HttpException(
+          {
+            msg: 'Failed to fetch Instagram media',
+            status: response.status,
+            statusText: response.statusText,
+          },
+          response.status
+        );
+      }
+
+      const instagramData = await response.json();
+
+      return instagramData;
+    } catch (error) {
+      throw new HttpException(
+        {
+          msg: 'Error fetching Instagram data',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+        500
+      );
+    }
+  }
+
+  @Post('/video/function')
+  videoFunction(@Body() body: VideoFunctionDto) {
+    return this._mediaService.videoFunction(
+      body.identifier,
+      body.functionName,
+      body.params
+    );
   }
 }

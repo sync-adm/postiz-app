@@ -127,13 +127,14 @@ export class PublicIntegrationsController {
     return this._mediaService.generateVideo(org, body);
   }
 
-  @Get('/integration')
-  async getIntegrationById(
+  @Get('/instagram-posts')
+  async getInstagramPosts(
     @GetOrgFromRequest() org: Organization,
     @Query('integrationId') integrationId: string,
     @Query('limit') limit?: string,
     @Query('before') before?: string,
-    @Query('after') after?: string
+    @Query('after') after?: string,
+    @Query('fields') fields?: string
   ) {
     if (!integrationId) {
       throw new HttpException({ msg: 'Integration ID is required' }, 400);
@@ -149,9 +150,13 @@ export class PublicIntegrationsController {
     }
 
     try {
+      const defaultFields =
+        'id,caption,media_type,media_url,thumbnail_url,timestamp,permalink';
+      const fieldsToUse = fields || defaultFields;
+
       const baseUrl = 'https://graph.instagram.com/me/media';
       const params = new URLSearchParams({
-        fields: 'id,caption,media_type,media_url,thumbnail_url,timestamp',
+        fields: fieldsToUse,
         access_token: integration.token,
       });
 

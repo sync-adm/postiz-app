@@ -34,8 +34,6 @@ services:
       - 'postiz-uploads:/uploads/'
     ports:
       - '${POSTIZ_PORT:-5000}:5000'
-    networks:
-      - postiz-network
     depends_on:
       postiz-postgres:
         condition: service_healthy
@@ -62,9 +60,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-$SERVICE_USER_POSTGRES}
       POSTGRES_DB: ${POSTGRES_DB:-$SERVICE_DATABASE_POSTGRES}
     volumes:
-      - 'postgres-volume:/var/lib/postgresql/data'
-    networks:
-      - postiz-network
+      - 'postgres-volume:/var/lib/postgresql/data'    
     healthcheck:
       test: 'pg_isready -U ${POSTGRES_USER:-$SERVICE_USER_POSTGRES} -d ${POSTGRES_DB:-$SERVICE_DATABASE_POSTGRES}'
       interval: 10s
@@ -80,9 +76,7 @@ services:
       timeout: 3s
       retries: 3
     volumes:
-      - 'postiz-redis-data:/data'
-    networks:
-      - postiz-network
+      - 'postiz-redis-data:/data'   
 volumes:
   postgres-volume:
     external: false
@@ -91,7 +85,4 @@ volumes:
   postiz-config:
     external: false
   postiz-uploads:
-    external: false
-networks:
-  postiz-network:
     external: false

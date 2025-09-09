@@ -43,16 +43,16 @@ services:
         condition: service_healthy
     labels:
       - traefik.enable=true
-      - 'traefik.http.routers.postiz-https.rule=Host(`${POSTIZ_DOMAIN:-postiz.sync.dev.br}`) && PathPrefix(`/`)'
-      - traefik.http.routers.postiz-https.entryPoints=https
-      - traefik.http.routers.postiz-https.middlewares=gzip
-      - traefik.http.routers.postiz-https.service=postiz-service
-      - traefik.http.routers.postiz-https.tls=true
-      - traefik.http.services.postiz-service.loadbalancer.server.port=5000
-      - traefik.http.routers.postiz-https.tls.certresolver=letsencrypt
-      - 'traefik.http.routers.postiz-http.rule=Host(`${POSTIZ_DOMAIN:-postiz.sync.dev.br}`) && PathPrefix(`/`)'
-      - traefik.http.routers.postiz-http.entryPoints=http
-      - traefik.http.routers.postiz-http.middlewares=redirect-to-https
+      - 'traefik.http.routers.postiz.rule=Host(`${POSTIZ_DOMAIN:-postiz.sync.dev.br}`) && PathPrefix(`/`)'
+      - traefik.http.routers.postiz.entryPoints=https
+      - traefik.http.routers.postiz.middlewares=gzip
+      - traefik.http.routers.postiz.service=postiz
+      - traefik.http.routers.postiz.tls=true
+      - traefik.http.services.postiz.loadbalancer.server.port=5000
+      - traefik.http.routers.postiz.tls.certresolver=letsencrypt
+      - 'traefik.http.routers.postiz.rule=Host(`${POSTIZ_DOMAIN:-postiz.sync.dev.br}`) && PathPrefix(`/`)'
+      - traefik.http.routers.postiz.entryPoints=http
+      - traefik.http.routers.postiz.middlewares=redirect-to-https
   postiz-postgres:
     image: 'postgres:17-alpine'
     container_name: postiz-postgres

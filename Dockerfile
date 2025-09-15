@@ -16,8 +16,8 @@ WORKDIR /app
 COPY . /app
 COPY var/docker/nginx.conf /etc/nginx/nginx.conf
 
-RUN pnpm install --ignore-scripts && \
-    pnpm run prisma-generate && \
-    NODE_OPTIONS="--max-old-space-size=4096" pnpm run build
+RUN pnpm install --frozen-lockfile && \
+    NODE_OPTIONS="--max-old-space-size=4096" pnpm run build && \
+    pnpm prune --prod
 
 CMD ["sh", "-c", "nginx && pnpm run pm2"]

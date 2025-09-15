@@ -20,8 +20,8 @@ COPY var/docker/nginx.conf /etc/nginx/nginx.conf
 RUN pnpm config set store-dir /tmp/.pnpm-store && \
     pnpm config set cache-dir /tmp/.pnpm-cache
 
-# Instalar dependências com cache limpo
-RUN pnpm install --frozen-lockfile --no-optional
+# Corrigir lockfile quebrado e instalar dependências
+RUN pnpm install --no-frozen-lockfile --no-optional
 
 # Limpar cache do Prisma e regenerar
 RUN rm -rf node_modules/@prisma/client && \

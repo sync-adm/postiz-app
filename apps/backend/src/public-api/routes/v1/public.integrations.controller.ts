@@ -153,41 +153,82 @@ export class PublicIntegrationsController {
       const defaultFields =
         'id,caption,media_type,media_url,thumbnail_url,timestamp,permalink';
       const fieldsToUse = fields || defaultFields;
+      const requestedLimit = limit ? parseInt(limit, 10) : null;
+      
+      // Array para armazenar todos os posts coletados
+      const allPosts: any[] = [];
+      let nextUrl: string | null = null;
+      let hasMore = true;
 
+      // Construir URL inicial
       const baseUrl = 'https://graph.instagram.com/me/media';
-      const params = new URLSearchParams({
+      const initialParams = new URLSearchParams({
         fields: fieldsToUse,
         access_token: integration.token,
+        limit: '100', // Sempre usar o máximo por requisição para eficiência
       });
 
-      if (limit) {
-        params.append('limit', limit);
-      }
-
       if (before) {
-        params.append('before', before);
+        initialParams.append('before', before);
       }
 
       if (after) {
-        params.append('after', after);
+        initialParams.append('after', after);
       }
 
-      const response = await fetch(`${baseUrl}?${params.toString()}`);
+      nextUrl = `${baseUrl}?${initialParams.toString()}`;
 
-      if (!response.ok) {
-        throw new HttpException(
-          {
-            msg: 'Failed to fetch Instagram media',
-            status: response.status,
-            statusText: response.statusText,
-          },
-          response.status
-        );
+      // Loop para paginar através de todos os resultados
+      while (hasMore && nextUrl) {
+        const response = await fetch(nextUrl);
+
+        if (!response.ok) {
+          throw new HttpException(
+            {
+              msg: 'Failed to fetch Instagram media',
+              status: response.status,
+              statusText: response.statusText,
+            },
+            response.status
+          );
+        }
+
+        const pageData = await response.json();
+
+        // Adicionar posts desta página ao array total
+        if (pageData.data && Array.isArray(pageData.data)) {
+          // Se há um limite específico, adicionar apenas o necessário
+          if (requestedLimit && allPosts.length + pageData.data.length >= requestedLimit) {
+            const remaining = requestedLimit - allPosts.length;
+            allPosts.push(...pageData.data.slice(0, remaining));
+            hasMore = false;
+          } else {
+            allPosts.push(...pageData.data);
+          }
+        }
+
+        // Verificar se há mais páginas
+        if (pageData.paging && pageData.paging.next) {
+          nextUrl = pageData.paging.next;
+        } else {
+          hasMore = false;
+          nextUrl = null;
+        }
+
+        // Se atingimos o limite solicitado, parar
+        if (requestedLimit && allPosts.length >= requestedLimit) {
+          hasMore = false;
+        }
       }
 
-      const instagramData = await response.json();
-
-      return instagramData;
+      // Retornar no formato similar ao original, mas com todos os posts coletados
+      return {
+        data: allPosts,
+        paging: {
+          total: allPosts.length,
+          hasMore: hasMore && nextUrl !== null,
+        }
+      };
     } catch (error) {
       throw new HttpException(
         {

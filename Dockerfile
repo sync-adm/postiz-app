@@ -16,8 +16,23 @@ WORKDIR /app
 COPY . /app
 COPY var/docker/nginx.conf /etc/nginx/nginx.conf
 
-RUN pnpm install --frozen-lockfile && \
-    NODE_OPTIONS="--max-old-space-size=4096" pnpm run build && \
-    pnpm prune --prod
+# Limpar cache do pnpm e configurar store
+RUN pnpm config set store-dir /tmp/.pnpm-store && \
+    pnpm config set cache-dir /tmp/.pnpm-cache
+
+# Instalar dependências com cache limpo
+RUN pnpm install --frozen-lockfile --no-optional
+
+# Limpar cache do Prisma e regenerar
+RUN rm -rf node_modules/@prisma/client && \
+    rm -rf node_modules/.prisma && \
+    rm -rf /root/.cache/pnpm && \
+    pnpm dlx prisma generate --schema ./libraries/nestjs-libraries/src/database/prisma/schema.prisma
+
+# Build com mais memória
+RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm run build
+
+# Limpeza final
+RUN pnpm prune --prod
 
 CMD ["sh", "-c", "nginx && pnpm run pm2"]

@@ -154,7 +154,7 @@ export class PublicIntegrationsController {
         'id,caption,media_type,media_url,thumbnail_url,timestamp,permalink';
       const fieldsToUse = fields || defaultFields;
       const requestedLimit = limit ? parseInt(limit, 10) : null;
-      
+
       // Array para armazenar todos os posts coletados
       const allPosts: any[] = [];
       let nextUrl: string | null = null;
@@ -198,7 +198,10 @@ export class PublicIntegrationsController {
         // Adicionar posts desta página ao array total
         if (pageData.data && Array.isArray(pageData.data)) {
           // Se há um limite específico, adicionar apenas o necessário
-          if (requestedLimit && allPosts.length + pageData.data.length >= requestedLimit) {
+          if (
+            requestedLimit &&
+            allPosts.length + pageData.data.length >= requestedLimit
+          ) {
             const remaining = requestedLimit - allPosts.length;
             allPosts.push(...pageData.data.slice(0, remaining));
             hasMore = false;
@@ -227,7 +230,7 @@ export class PublicIntegrationsController {
         paging: {
           total: allPosts.length,
           hasMore: hasMore && nextUrl !== null,
-        }
+        },
       };
     } catch (error) {
       throw new HttpException(

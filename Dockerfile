@@ -16,7 +16,7 @@ WORKDIR /app
 COPY . /app
 COPY var/docker/nginx.conf /etc/nginx/nginx.conf
 
-RUN pnpm install --frozen-lockfile && \
+RUN pnpm install && \
     NODE_OPTIONS="--max-old-space-size=4096" pnpm run build && \
     pnpm prune --prod
 

@@ -6,9 +6,9 @@ services:
     container_name: postiz
     restart: always
     environment:
-      MAIN_URL: ${MAIN_URL:-https://postiz-marketing.sync.dev.br}
-      FRONTEND_URL: ${FRONTEND_URL:-https://postiz-marketing.sync.dev.br}
-      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://postiz-marketing.sync.dev.br/api}
+      MAIN_URL: ${MAIN_URL:-https://postiz.sync.dev.br}
+      FRONTEND_URL: ${FRONTEND_URL:-https://postiz.sync.dev.br}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://postiz.sync.dev.br/api}
       JWT_SECRET: ${JWT_SECRET:-$SERVICE_PASSWORD_64_BASE64}
       DATABASE_URL: ${DATABASE_URL:-postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postiz-postgres:5432/$SERVICE_DATABASE_POSTGRES}
       REDIS_URL: ${REDIS_URL:-redis://postiz-redis:6379}

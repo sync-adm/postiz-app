@@ -6,9 +6,9 @@ services:
     container_name: postiz
     restart: always
     environment:
-      MAIN_URL: ${MAIN_URL:-https://postiz-marketing.sync.dev.br}
-      FRONTEND_URL: ${FRONTEND_URL:-https://postiz-marketing.sync.dev.br}
-      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://postiz-marketing.sync.dev.br/api}
+      MAIN_URL: ${MAIN_URL:-https://postiz.sync.dev.br}
+      FRONTEND_URL: ${FRONTEND_URL:-https://postiz.sync.dev.br}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://postiz.sync.dev.br/api}
       JWT_SECRET: ${JWT_SECRET:-$SERVICE_PASSWORD_64_BASE64}
       DATABASE_URL: ${DATABASE_URL:-postgresql://$SERVICE_USER_POSTGRES:$SERVICE_PASSWORD_POSTGRES@postiz-postgres:5432/$SERVICE_DATABASE_POSTGRES}
       REDIS_URL: ${REDIS_URL:-redis://postiz-redis:6379}
@@ -34,8 +34,6 @@ services:
       - 'postiz-uploads:/uploads/'
     ports:
       - '${POSTIZ_PORT:-5555}:5555'
-    networks:
-      - postiz-network
     depends_on:
       postiz-postgres:
         condition: service_healthy
@@ -43,16 +41,16 @@ services:
         condition: service_healthy
     labels:
       - traefik.enable=true
-      - 'traefik.http.routers.postiz-https.rule=Host(`${POSTIZ_DOMAIN:-postiz.example.com}`) && PathPrefix(`/`)'
-      - traefik.http.routers.postiz-https.entryPoints=https
-      - traefik.http.routers.postiz-https.middlewares=gzip
-      - traefik.http.routers.postiz-https.service=postiz-service
-      - traefik.http.routers.postiz-https.tls=true
-      - traefik.http.services.postiz-service.loadbalancer.server.port=5555
-      - traefik.http.routers.postiz-https.tls.certresolver=letsencrypt
-      - 'traefik.http.routers.postiz-http.rule=Host(`${POSTIZ_DOMAIN:-postiz.example.com}`) && PathPrefix(`/`)'
-      - traefik.http.routers.postiz-http.entryPoints=http
-      - traefik.http.routers.postiz-http.middlewares=redirect-to-https
+      - 'traefik.http.routers.postiz.rule=Host(`${POSTIZ_DOMAIN:-postiz.sync.dev.br}`) && PathPrefix(`/`)'
+      - traefik.http.routers.postiz.entryPoints=https
+      - traefik.http.routers.postiz.middlewares=gzip
+      - traefik.http.routers.postiz.service=postiz
+      - traefik.http.routers.postiz.tls=true
+      - traefik.http.services.postiz.loadbalancer.server.port=5555
+      - traefik.http.routers.postiz.tls.certresolver=letsencrypt
+      - 'traefik.http.routers.postiz.rule=Host(`${POSTIZ_DOMAIN:-postiz.sync.dev.br}`) && PathPrefix(`/`)'
+      - traefik.http.routers.postiz.entryPoints=http
+      - traefik.http.routers.postiz.middlewares=redirect-to-https
   postiz-postgres:
     image: 'postgres:17-alpine'
     container_name: postiz-postgres
@@ -62,9 +60,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-$SERVICE_USER_POSTGRES}
       POSTGRES_DB: ${POSTGRES_DB:-$SERVICE_DATABASE_POSTGRES}
     volumes:
-      - 'postgres-volume:/var/lib/postgresql/data'
-    networks:
-      - postiz-network
+      - 'postgres-volume:/var/lib/postgresql/data'    
     healthcheck:
       test: 'pg_isready -U ${POSTGRES_USER:-$SERVICE_USER_POSTGRES} -d ${POSTGRES_DB:-$SERVICE_DATABASE_POSTGRES}'
       interval: 10s
@@ -80,9 +76,7 @@ services:
       timeout: 3s
       retries: 3
     volumes:
-      - 'postiz-redis-data:/data'
-    networks:
-      - postiz-network
+      - 'postiz-redis-data:/data'   
 volumes:
   postgres-volume:
     external: false
@@ -91,7 +85,4 @@ volumes:
   postiz-config:
     external: false
   postiz-uploads:
-    external: false
-networks:
-  postiz-network:
     external: false

@@ -15,7 +15,7 @@ import striptags from 'striptags';
 
 const telegramBot = new TelegramBot(process.env.TELEGRAM_TOKEN!);
 // Added to support local storage posting
-const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5000';
+const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5555';
 const mediaStorage = process.env.STORAGE_PROVIDER || 'local';
 
 export class TelegramProvider extends SocialAbstract implements SocialProvider {
@@ -146,11 +146,7 @@ export class TelegramProvider extends SocialAbstract implements SocialProvider {
     for (const message of postDetails) {
       let messageId: number | null = null;
       const mediaFiles = message.media || [];
-      const text = striptags(message.message || '', [
-        'u',
-        'strong',
-        'p',
-      ])
+      const text = striptags(message.message || '', ['u', 'strong', 'p'])
         .replace(/<strong>/g, '<b>')
         .replace(/<\/strong>/g, '</b>')
         .replace(/<p>(.*?)<\/p>/g, '$1\n');

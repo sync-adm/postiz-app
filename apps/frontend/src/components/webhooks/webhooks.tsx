@@ -179,8 +179,8 @@ export const AddOrEditWebhook: FC<{
         body: JSON.stringify({
           ...(data?.id
             ? {
-                id: data.id,
-              }
+              id: data.id,
+            }
             : {}),
           ...values,
         }),
@@ -211,6 +211,7 @@ export const AddOrEditWebhook: FC<{
             content: 'This is the first post to instagram',
             publishDate: '2025-02-06T13:09:00.000Z',
             releaseURL: 'https://facebook.com/release/release',
+            releaseId: '123456789',
             state: 'PUBLISHED',
             integration: {
               id: 'cm6s4uyou0001i2r47pxix6z1',
@@ -225,6 +226,7 @@ export const AddOrEditWebhook: FC<{
             content: 'This is the second post to facebook',
             publishDate: '2025-02-06T13:09:00.000Z',
             releaseURL: 'https://facebook.com/release2/release2',
+            releaseId: '987654321',
             state: 'PUBLISHED',
             integration: {
               id: 'cm6s4uyou0001i2r47pxix6z1',

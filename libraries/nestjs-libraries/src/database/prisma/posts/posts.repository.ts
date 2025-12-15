@@ -25,7 +25,7 @@ export class PostsRepository {
     private _tags: PrismaRepository<'tags'>,
     private _tagsPosts: PrismaRepository<'tagsPosts'>,
     private _errors: PrismaRepository<'errors'>
-  ) {}
+  ) { }
 
   searchForMissingThreeHoursPosts() {
     return this._post.model.post.findMany({
@@ -141,10 +141,10 @@ export class PostsRepository {
         parentPostId: null,
         ...(query.customer
           ? {
-              integration: {
-                customerId: query.customer,
-              },
-            }
+            integration: {
+              customerId: query.customer,
+            },
+          }
           : {}),
       },
       select: {
@@ -234,13 +234,13 @@ export class PostsRepository {
       include: {
         ...(includeIntegration
           ? {
-              integration: true,
-              tags: {
-                select: {
-                  tag: true,
-                },
+            integration: true,
+            tags: {
+              select: {
+                tag: true,
               },
-            }
+            },
+          }
           : {}),
         childrenPost: true,
       },
@@ -291,7 +291,7 @@ export class PostsRepository {
             body: typeof body === 'string' ? body : JSON.stringify(body),
           },
         });
-      } catch (err) {}
+      } catch (err) { }
     }
 
     return update;
@@ -353,19 +353,19 @@ export class PostsRepository {
         },
         ...(posts?.[posts.length - 1]?.id
           ? {
-              parentPost: {
-                connect: {
-                  id: posts[posts.length - 1]?.id,
-                },
+            parentPost: {
+              connect: {
+                id: posts[posts.length - 1]?.id,
               },
-            }
+            },
+          }
           : type === 'update'
-          ? {
+            ? {
               parentPost: {
                 disconnect: true,
               },
             }
-          : {}),
+            : {}),
         content: value.content,
         group: uuid,
         intervalInDays: inter ? +inter : null,
@@ -439,17 +439,17 @@ export class PostsRepository {
 
     const previousPost = body.group
       ? (
-          await this._post.model.post.findFirst({
-            where: {
-              group: body.group,
-              deletedAt: null,
-              parentPostId: null,
-            },
-            select: {
-              id: true,
-            },
-          })
-        )?.id!
+        await this._post.model.post.findFirst({
+          where: {
+            group: body.group,
+            deletedAt: null,
+            parentPostId: null,
+          },
+          select: {
+            id: true,
+          },
+        })
+      )?.id!
       : undefined;
 
     if (body.group) {
@@ -681,6 +681,7 @@ export class PostsRepository {
         content: true,
         publishDate: true,
         releaseURL: true,
+        releaseId: true,
         state: true,
         integration: {
           select: {
